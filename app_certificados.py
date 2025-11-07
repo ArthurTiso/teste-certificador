@@ -53,7 +53,17 @@ gerar_pdf_unico = st.sidebar.checkbox("Gerar um único PDF com todos os certific
 
 # Y position as percentage of image height
 y_pos_pct = st.sidebar.slider("Posição vertical do nome (percentual da altura)", min_value=0, max_value=100, value=43)
-output_zip_name = st.sidebar.text_input("Nome do arquivo ZIP de saída", value=f"certificados_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip")
+# Define nome do arquivo ZIP uma única vez (persistente entre recarregamentos)
+if "output_zip_name" not in st.session_state:
+    st.session_state.output_zip_name = f"certificados_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
+
+output_zip_name = st.sidebar.text_input(
+    "Nome do arquivo ZIP de saída", 
+    value=st.session_state.output_zip_name,
+    key="zip_name_input"
+)
+st.session_state.output_zip_name = output_zip_name  # salva edição
+
 
 uploaded_image = st.file_uploader("Upload do template do certificado (PNG/JPG)", type=["png", "jpg", "jpeg"]) 
 uploaded_excel = st.file_uploader("Upload do arquivo Excel (.xlsx) com coluna 'nome'", type=["xlsx"]) 
@@ -204,9 +214,7 @@ if generate_btn:
             x = (W - text_w) // 2 if centered_checkbox else int(W * 0.1)
         
             # --- Texto ---
-            shadow_offset = 2
-            draw.text((x+shadow_offset, y+shadow_offset), nome, font=font, fill=(0,0,0,180))
-            draw.text((x, y), nome, font=font, fill=(0,0,0,255))
+           draw.text((x, y), nome, font=font, fill=(0,0,0,255))
         
             # --- Salvar como PDF individual ---
             out_rgb = base.convert('RGB')
