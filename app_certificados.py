@@ -143,72 +143,74 @@ if generate_btn:
             st.warning(f"A coluna 'nome' não foi encontrada. Usando a primeira coluna: {selected_col}")
 
         nomes = df[selected_col].astype(str).str.strip().dropna().tolist()
+        
         if len(nomes) == 0:
             st.error("Nenhum nome válido encontrado no Excel.")
             st.stop()
 
-              # --- Geração dos certificados ---
-            pdf_list = []  # Armazena PDFs individuais em memória
-            
-            for idx, nome in enumerate(nomes, start=1):
-                base = image.copy().convert("RGBA")
-                draw = ImageDraw.Draw(base)
-                W, H = base.size
-            
-                y = int(H * (y_pos_pct / 100.0))
-                max_w = int(W * (max_width_pct / 100.0))
-            
-                # --- Fonte ---
-                if fix_size:
-                    font = load_font(FONT_PATH or "arial.ttf", default_font_size)
-                    bbox = draw.textbbox((0, 0), nome, font=font)
-                    text_w, text_h = bbox[2] - bbox[0], bbox[3] - bbox[1]
-                else:
-                    font, (text_w, text_h) = fit_text_to_width(
-                        draw, nome, FONT_PATH if FONT_PATH.strip() != "" else "arial.ttf",
-                        default_font_size, max_w
-                    )
-            
-                x = (W - text_w) // 2 if centered_checkbox else int(W * 0.1)
-            
-                # --- Texto ---
-                shadow_offset = 2
-                draw.text((x+shadow_offset, y+shadow_offset), nome, font=font, fill=(0,0,0,180))
-                draw.text((x, y), nome, font=font, fill=(0,0,0,255))
-            
-                # --- Salvar como PDF individual ---
-                out_rgb = base.convert('RGB')
-                pdf_bytes = io.BytesIO()
-                out_rgb.save(pdf_bytes, format='PDF', resolution=300)
-                pdf_bytes.seek(0)
-                pdf_list.append(pdf_bytes.read())
-            
-            # --- Unir ou compactar ---
-            if gerar_pdf_unico:
-                from PyPDF2 import PdfMerger
-                merger = PdfMerger()
-                for pdf_data in pdf_list:
-                    merger.append(io.BytesIO(pdf_data))
-            
-                merged_pdf = io.BytesIO()
-                merger.write(merged_pdf)
-                merger.close()
-                merged_pdf.seek(0)
-            
-                st.success(f"Gerado um único PDF com {len(nomes)} certificados.")
-                st.download_button("Baixar PDF único", data=merged_pdf, file_name="certificados_unificados.pdf", mime="application/pdf")
-            
-            else:
-                zip_buffer = io.BytesIO()
-                with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
-                    for idx, nome in enumerate(nomes, start=1):
-                        safe_name = "".join([c for c in nome if c.isalnum() or c in (' ', '-', '_')]).rstrip()
-                        filename = f"{idx:03d} - {safe_name}.pdf"
-                        zipf.writestr(filename, pdf_list[idx-1])
-                zip_buffer.seek(0)
-            
-                st.success(f"Gerados {len(nomes)} certificados — download pronto.")
-                st.download_button("Baixar todos os PDFs (.zip)", data=zip_buffer, file_name=output_zip_name, mime='application/zip')
+# --- Geração dos certificados ---
+pdf_list = []  # Armazena PDFs individuais em memória
+
+for idx, nome in enumerate(nomes, start=1):
+    base = image.copy().convert("RGBA")
+    draw = ImageDraw.Draw(base)
+    W, H = base.size
+
+    y = int(H * (y_pos_pct / 100.0))
+    max_w = int(W * (max_width_pct / 100.0))
+
+    # --- Fonte ---
+    if fix_size:
+        font = load_font(FONT_PATH or "arial.ttf", default_font_size)
+        bbox = draw.textbbox((0, 0), nome, font=font)
+        text_w, text_h = bbox[2] - bbox[0], bbox[3] - bbox[1]
+    else:
+        font, (text_w, text_h) = fit_text_to_width(
+            draw, nome, FONT_PATH if FONT_PATH.strip() != "" else "arial.ttf",
+            default_font_size, max_w
+        )
+
+    x = (W - text_w) // 2 if centered_checkbox else int(W * 0.1)
+
+    # --- Texto ---
+    shadow_offset = 2
+    draw.text((x+shadow_offset, y+shadow_offset), nome, font=font, fill=(0,0,0,180))
+    draw.text((x, y), nome, font=font, fill=(0,0,0,255))
+
+    # --- Salvar como PDF individual ---
+    out_rgb = base.convert('RGB')
+    pdf_bytes = io.BytesIO()
+    out_rgb.save(pdf_bytes, format='PDF', resolution=300)
+    pdf_bytes.seek(0)
+    pdf_list.append(pdf_bytes.read())
+
+# --- Unir ou compactar ---
+if gerar_pdf_unico:
+    from PyPDF2 import PdfMerger
+    merger = PdfMerger()
+    for pdf_data in pdf_list:
+        merger.append(io.BytesIO(pdf_data))
+
+    merged_pdf = io.BytesIO()
+    merger.write(merged_pdf)
+    merger.close()
+    merged_pdf.seek(0)
+
+    st.success(f"Gerado um único PDF com {len(nomes)} certificados.")
+    st.download_button("Baixar PDF único", data=merged_pdf, file_name="certificados_unificados.pdf", mime="application/pdf")
+
+else:
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
+        for idx, nome in enumerate(nomes, start=1):
+            safe_name = "".join([c for c in nome if c.isalnum() or c in (' ', '-', '_')]).rstrip()
+            filename = f"{idx:03d} - {safe_name}.pdf"
+            zipf.writestr(filename, pdf_list[idx-1])
+    zip_buffer.seek(0)
+
+    st.success(f"Gerados {len(nomes)} certificados — download pronto.")
+    st.download_button("Baixar todos os PDFs (.zip)", data=zip_buffer, file_name=output_zip_name, mime='application/zip')
+
 
 
         st.info("Dica: se os nomes estiverem cortados, ajuste o 'Tamanho de fonte (inicial)' ou a 'Posição vertical'.")
