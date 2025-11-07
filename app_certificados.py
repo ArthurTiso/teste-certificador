@@ -32,8 +32,8 @@ from datetime import datetime
 import glob
 st.set_page_config(page_title="Gerador de Certificados", layout="wide")
 
-st.title("Gerador de Certificados — Escola")
-st.write("Faça upload do template (PNG/JPG) e do Excel (.xlsx) com coluna 'nome'. O app gera PDFs centralizados.")
+st.title("Gerador de Certificados")
+st.write("Faça upload do template (PNG/JPG) e do Excel (.xlsx) com coluna a 'nome', seguida dos nomes que deseja")
 
 # Sidebar settings
 st.sidebar.header("Configurações")
@@ -51,7 +51,7 @@ max_width_pct = st.sidebar.slider("Largura máxima do nome (% da largura da imag
 fix_size = st.sidebar.checkbox("Usar tamanho fixo para todos os nomes", value=True)
 gerar_pdf_unico = st.sidebar.checkbox("Gerar um único PDF com todos os certificados", value=False)
 
-# Y position as percentage of image height
+# Y position como prct em slider
 y_pos_pct = st.sidebar.slider("Posição vertical do nome (percentual da altura)", min_value=0, max_value=100, value=43)
 # Define nome do arquivo
 if "output_zip_name" not in st.session_state:
@@ -91,7 +91,7 @@ def load_font(path, size):
             return ImageFont.load_default()
 
 
-# --- Font utilities (corrigido) ---
+# Font utilities
 
 def load_font(font_path, size):
     """Tenta carregar a fonte especificada. Se falhar, tenta Arial. Se falhar novamente, usa a fonte padrão."""
@@ -168,7 +168,7 @@ if generate_btn:
                 # nothing
                 pass
             else:
-                st.error("O arquivo Excel precisa ter uma coluna chamada 'nome' (ou nome em outra capitalização).")
+                st.error("O arquivo Excel precisa ter uma coluna chamada 'nome' (ou nome com caixa alta!).")
                 st.stop()
 
         # Normalize column name to 'nome'
@@ -213,10 +213,10 @@ if generate_btn:
         
             x = (W - text_w) // 2 if centered_checkbox else int(W * 0.1)
         
-            # --- Texto ---
+            # Texto 
             draw.text((x, y), nome, font=font, fill=(0,0,0,255))
         
-            # --- Salvar como PDF individual ---
+            # Salvar como PDF individual
             out_rgb = base.convert('RGB')
             pdf_bytes = io.BytesIO()
             out_rgb.save(pdf_bytes, format='PDF', resolution=300)
@@ -251,8 +251,5 @@ if generate_btn:
             st.download_button("Baixar todos os PDFs (.zip)", data=zip_buffer, file_name=output_zip_name, mime='application/zip')
 
 
-
-        st.info("Dica: se os nomes estiverem cortados, ajuste o 'Tamanho de fonte (inicial)' ou a 'Posição vertical'.")
-
 st.markdown("---")
-st.caption("Desenvolvido com Pillow + Streamlit. Fonte: Arial (se disponível).")
+st.caption("Desenvolvido Arthur de Morais com Pillow + Streamlit..")
