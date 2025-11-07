@@ -48,11 +48,13 @@ else:
 
 default_font_size = st.sidebar.slider("Tamanho de fonte (inicial)", min_value=20, max_value=180, value=48)
 max_width_pct = st.sidebar.slider("Largura máxima do nome (% da largura da imagem)", min_value=40, max_value=95, value=80)
-fix_size = st.sidebar.checkbox("Usar tamanho fixo para todos os nomes", value=True)
-gerar_pdf_unico = st.sidebar.checkbox("Gerar um único PDF com todos os certificados", value=False)
 
 # Y position como prct em slider
 y_pos_pct = st.sidebar.slider("Posição vertical do nome (percentual da altura)", min_value=0, max_value=100, value=43)
+
+fix_size = st.sidebar.checkbox("Usar tamanho fixo para todos os nomes", value=True)
+gerar_pdf_unico = st.sidebar.checkbox("Gerar um único PDF com todos os certificados", value=False)
+
 # Define nome do arquivo
 if "output_zip_name" not in st.session_state:
     st.session_state.output_zip_name = f"certificados_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
