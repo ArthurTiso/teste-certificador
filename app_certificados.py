@@ -214,7 +214,7 @@ if generate_btn:
             x = (W - text_w) // 2 if centered_checkbox else int(W * 0.1)
         
             # --- Texto ---
-           draw.text((x, y), nome, font=font, fill=(0,0,0,255))
+            draw.text((x, y), nome, font=font, fill=(0,0,0,255))
         
             # --- Salvar como PDF individual ---
             out_rgb = base.convert('RGB')
