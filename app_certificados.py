@@ -68,16 +68,21 @@ def load_font(path, size):
             return ImageFont.load_default()
 
 
-def fit_text_to_width(draw, text, font_path, initial_size, max_width_px):
-    """Reduz o tamanho da fonte até que o texto caiba em max_width_px."""
-    size = initial_size
-    font = load_font(font_path, size)
-    w, h = draw.textsize(text, font=font)
-    # reduce until fits or size small
-    while w > max_width_px and size > 8:
-        size -= 2
-        font = load_font(font_path, size)
-        w, h = draw.textsize(text, font=font)
+def fit_text_to_width(draw, text, font_path, initial_font_size, max_width):
+    font_size = initial_font_size
+    while font_size > 1:
+        font = ImageFont.truetype(font_path, font_size)
+        try:
+            # Pillow 10+
+            bbox = draw.textbbox((0, 0), text, font=font)
+            w, h = bbox[2] - bbox[0], bbox[3] - bbox[1]
+        except AttributeError:
+            # Pillow <10
+            w, h = draw.textsize(text, font=font)
+
+        if w <= max_width:
+            return font, (w, h)
+        font_size -= 1
     return font, (w, h)
 
 
