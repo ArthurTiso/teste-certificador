@@ -116,7 +116,30 @@ def fit_text_to_width(draw, text, font_path, initial_font_size, max_width):
 
 if uploaded_image is not None:
     image = Image.open(uploaded_image).convert("RGBA")
-    preview_placeholder.image(image, use_column_width=True)
+    base_preview = image.copy().convert("RGBA")
+    draw_prev = ImageDraw.Draw(base_preview)
+    W, H = base_preview.size
+
+    # Texto de exemplo
+    exemplo_nome = "NOME DO ALUNO"
+    y_prev = int(H * (y_pos_pct / 100.0))
+    max_w_prev = int(W * (max_width_pct / 100.0))
+
+    if fix_size:
+        font_prev = load_font(FONT_PATH or "arial.ttf", default_font_size)
+        bbox = draw_prev.textbbox((0, 0), exemplo_nome, font=font_prev)
+        text_w, text_h = bbox[2] - bbox[0], bbox[3] - bbox[1]
+    else:
+        font_prev, (text_w, text_h) = fit_text_to_width(
+            draw_prev, exemplo_nome, FONT_PATH if FONT_PATH.strip() != "" else "arial.ttf",
+            default_font_size, max_w_prev
+        )
+
+    x_prev = (W - text_w) // 2
+    draw_prev.text((x_prev, y_prev), exemplo_nome, font=font_prev, fill=(0, 0, 0, 255))
+
+    preview_placeholder.image(base_preview, use_container_width=True)
+
 
 if generate_btn:
     if uploaded_image is None or uploaded_excel is None:
