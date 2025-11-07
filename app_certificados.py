@@ -40,6 +40,8 @@ st.sidebar.header("Configurações")
 FONT_PATH = st.sidebar.text_input("Caminho para fonte .ttf (deixe vazio para usar a fonte padrão)", value="OpenSans-Regular.ttf")
 default_font_size = st.sidebar.slider("Tamanho de fonte (inicial)", min_value=20, max_value=180, value=48)
 max_width_pct = st.sidebar.slider("Largura máxima do nome (% da largura da imagem)", min_value=40, max_value=95, value=80)
+fix_size = st.sidebar.checkbox("Usar tamanho fixo para todos os nomes", value=True)
+
 # Y position as percentage of image height
 y_pos_pct = st.sidebar.slider("Posição vertical do nome (percentual da altura)", min_value=0, max_value=100, value=43)
 output_zip_name = st.sidebar.text_input("Nome do arquivo ZIP de saída", value=f"certificados_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip")
@@ -55,6 +57,8 @@ with col2:
     st.markdown("**Opções Rápidas**")
     centered_checkbox = st.checkbox("Centralizar horizontalmente (recomendado)", value=True)
     generate_btn = st.button("Gerar certificados")
+
+
 
 # Utilities
 
@@ -157,8 +161,20 @@ if generate_btn:
                 # Max width in pixels
                 max_w = int(W * (max_width_pct / 100.0))
 
-                # Fit font
-                font, (text_w, text_h) = fit_text_to_width(draw, nome, FONT_PATH or "arial.ttf", default_font_size, max_w)
+ 
+                # Fit font (condicional: tamanho fixo ou ajuste automático)
+                if fix_size:
+                    # Usa tamanho fixo definido pelo usuário
+                    font = load_font(FONT_PATH or "arial.ttf", default_font_size)
+                    bbox = draw.textbbox((0, 0), nome, font=font)
+                    text_w, text_h = bbox[2] - bbox[0], bbox[3] - bbox[1]
+                else:
+                    # Ajusta automaticamente para caber dentro da largura máxima
+                    font, (text_w, text_h) = fit_text_to_width(
+                        draw, nome, FONT_PATH if FONT_PATH.strip() != "" else "arial.ttf",
+                        default_font_size, max_w
+                        )
+
 
                 # X position
                 if centered_checkbox:
