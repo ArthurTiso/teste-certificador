@@ -35,9 +35,9 @@ st.set_page_config(page_title="Gerador de Certificados", layout="wide")
 st.title("Gerador de Certificados")
 st.write("Faça upload do template (PNG/JPG) e do Excel (.xlsx) com coluna a 'nome', seguida dos nomes que deseja")
 
-# Sidebar settings
+# Sidebar configs
 st.sidebar.header("Configurações")
-# --- Fontes disponíveis ---
+# Fontes disponíveis
 font_files = glob.glob("fonts/*.ttf")
 font_names = [os.path.basename(f) for f in font_files]
 if not font_files:
@@ -70,6 +70,7 @@ st.session_state.output_zip_name = output_zip_name  # salva edição
 uploaded_image = st.file_uploader("Upload do template do certificado (PNG/JPG)", type=["png", "jpg", "jpeg"]) 
 uploaded_excel = st.file_uploader("Upload do arquivo Excel (.xlsx) com coluna 'nome'", type=["xlsx"]) 
 
+# Duas colunas principais com as demais informações
 col1, col2 = st.columns(2)
 with col1:
     st.markdown("**Pré-visualização do template**")
@@ -93,7 +94,7 @@ def load_font(path, size):
             return ImageFont.load_default()
 
 
-# Font utilities
+# Carregamento das fontes e configs delas
 
 def load_font(font_path, size):
     """Tenta carregar a fonte especificada. Se falhar, tenta Arial. Se falhar novamente, usa a fonte padrão."""
@@ -133,7 +134,7 @@ if uploaded_image is not None:
     W, H = base_preview.size
 
     # Texto de exemplo
-    exemplo_nome = "NOME DO ALUNO"
+    exemplo_nome = "NOME INSERIDO"
     y_prev = int(H * (y_pos_pct / 100.0))
     max_w_prev = int(W * (max_width_pct / 100.0))
 
@@ -173,7 +174,7 @@ if generate_btn:
                 st.error("O arquivo Excel precisa ter uma coluna chamada 'nome' (ou nome com caixa alta!).")
                 st.stop()
 
-        # Normalize column name to 'nome'
+        # Normaliza a coluna de nomes (Caso haja caps)
         col_map = {c: c for c in df.columns}
         selected_col = None
         for c in df.columns:
@@ -181,17 +182,18 @@ if generate_btn:
                 selected_col = c
                 break
         if selected_col is None:
-            # fallback: pick first column
+            # fallback (Pega a primeira coluna)
             selected_col = df.columns[0]
             st.warning(f"A coluna 'nome' não foi encontrada. Usando a primeira coluna: {selected_col}")
-
+            
+        # corrige problemas em nomes, converte tudo para texto, removendo blank spaces, celulas vazias e por fim cria uma lista do python
         nomes = df[selected_col].astype(str).str.strip().dropna().tolist()
         
         if len(nomes) == 0:
             st.error("Nenhum nome válido encontrado no Excel.")
             st.stop()
 
-        # --- Geração dos certificados ---
+        # Geração dos certificados 
         pdf_list = []  # Armazena PDFs individuais em memória
         
         for idx, nome in enumerate(nomes, start=1):
@@ -202,7 +204,7 @@ if generate_btn:
             y = int(H * (y_pos_pct / 100.0))
             max_w = int(W * (max_width_pct / 100.0))
         
-            # --- Fonte ---
+            # Fonte 
             if fix_size:
                 font = load_font(FONT_PATH or "arial.ttf", default_font_size)
                 bbox = draw.textbbox((0, 0), nome, font=font)
