@@ -256,4 +256,8 @@ if generate_btn:
 
 
 st.markdown("---")
-st.caption("Desenvolvido Arthur de Morais com Pillow + Streamlit..")
+st.caption("Desenvolvido **Arthur de Morais** com Pillow + Streamlit. 
+[🌐 GitHub](https://github.com/seu-usuario) • [💼 LinkedIn](https://www.linkedin.com/in/seu-perfil/)
+    """,
+    unsafe_allow_html=True
+)
