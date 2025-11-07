@@ -41,6 +41,7 @@ FONT_PATH = st.sidebar.text_input("Caminho para fonte .ttf (deixe vazio para usa
 default_font_size = st.sidebar.slider("Tamanho de fonte (inicial)", min_value=20, max_value=180, value=48)
 max_width_pct = st.sidebar.slider("Largura máxima do nome (% da largura da imagem)", min_value=40, max_value=95, value=80)
 fix_size = st.sidebar.checkbox("Usar tamanho fixo para todos os nomes", value=True)
+gerar_pdf_unico = st.sidebar.checkbox("Gerar um único PDF com todos os certificados", value=False)
 
 # Y position as percentage of image height
 y_pos_pct = st.sidebar.slider("Posição vertical do nome (percentual da altura)", min_value=0, max_value=100, value=43)
@@ -146,68 +147,69 @@ if generate_btn:
             st.error("Nenhum nome válido encontrado no Excel.")
             st.stop()
 
-        # Create a temp zip in memory
-        zip_buffer = io.BytesIO()
-        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
+              # --- Geração dos certificados ---
+            pdf_list = []  # Armazena PDFs individuais em memória
+            
             for idx, nome in enumerate(nomes, start=1):
-                # Open fresh image each iteration
                 base = image.copy().convert("RGBA")
                 draw = ImageDraw.Draw(base)
                 W, H = base.size
-
-                # Determine Y position in pixels from percent
+            
                 y = int(H * (y_pos_pct / 100.0))
-
-                # Max width in pixels
                 max_w = int(W * (max_width_pct / 100.0))
-
- 
-                # Fit font (condicional: tamanho fixo ou ajuste automático)
+            
+                # --- Fonte ---
                 if fix_size:
-                    # Usa tamanho fixo definido pelo usuário
                     font = load_font(FONT_PATH or "arial.ttf", default_font_size)
                     bbox = draw.textbbox((0, 0), nome, font=font)
                     text_w, text_h = bbox[2] - bbox[0], bbox[3] - bbox[1]
                 else:
-                    # Ajusta automaticamente para caber dentro da largura máxima
                     font, (text_w, text_h) = fit_text_to_width(
                         draw, nome, FONT_PATH if FONT_PATH.strip() != "" else "arial.ttf",
                         default_font_size, max_w
-                        )
-
-
-                # X position
-                if centered_checkbox:
-                    x = (W - text_w) // 2
-                else:
-                    x = int(W * 0.1)  # 10% from left as fallback
-
-                # Draw text with a slight black shadow for readability
+                    )
+            
+                x = (W - text_w) // 2 if centered_checkbox else int(W * 0.1)
+            
+                # --- Texto ---
                 shadow_offset = 2
-                try:
-                    draw.text((x+shadow_offset, y+shadow_offset), nome, font=font, fill=(0,0,0,180))
-                except Exception:
-                    draw.text((x+shadow_offset, y+shadow_offset), nome, font=font, fill=(0,0,0))
-                try:
-                    draw.text((x, y), nome, font=font, fill=(0,0,0,255))
-                except Exception:
-                    draw.text((x, y), nome, font=font, fill=(0,0,0))
-
-                # Convert to RGB and save as PDF into BytesIO
+                draw.text((x+shadow_offset, y+shadow_offset), nome, font=font, fill=(0,0,0,180))
+                draw.text((x, y), nome, font=font, fill=(0,0,0,255))
+            
+                # --- Salvar como PDF individual ---
                 out_rgb = base.convert('RGB')
                 pdf_bytes = io.BytesIO()
-                # Use high quality by specifying resolution
                 out_rgb.save(pdf_bytes, format='PDF', resolution=300)
                 pdf_bytes.seek(0)
+                pdf_list.append(pdf_bytes.read())
+            
+            # --- Unir ou compactar ---
+            if gerar_pdf_unico:
+                from PyPDF2 import PdfMerger
+                merger = PdfMerger()
+                for pdf_data in pdf_list:
+                    merger.append(io.BytesIO(pdf_data))
+            
+                merged_pdf = io.BytesIO()
+                merger.write(merged_pdf)
+                merger.close()
+                merged_pdf.seek(0)
+            
+                st.success(f"Gerado um único PDF com {len(nomes)} certificados.")
+                st.download_button("Baixar PDF único", data=merged_pdf, file_name="certificados_unificados.pdf", mime="application/pdf")
+            
+            else:
+                zip_buffer = io.BytesIO()
+                with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
+                    for idx, nome in enumerate(nomes, start=1):
+                        safe_name = "".join([c for c in nome if c.isalnum() or c in (' ', '-', '_')]).rstrip()
+                        filename = f"{idx:03d} - {safe_name}.pdf"
+                        zipf.writestr(filename, pdf_list[idx-1])
+                zip_buffer.seek(0)
+            
+                st.success(f"Gerados {len(nomes)} certificados — download pronto.")
+                st.download_button("Baixar todos os PDFs (.zip)", data=zip_buffer, file_name=output_zip_name, mime='application/zip')
 
-                # Name the file safely
-                safe_name = "".join([c for c in nome if c.isalnum() or c in (' ', '-', '_')]).rstrip()
-                filename = f"{idx:03d} - {safe_name}.pdf"
-                zipf.writestr(filename, pdf_bytes.read())
-
-        zip_buffer.seek(0)
-        st.success(f"Gerados {len(nomes)} certificados — download pronto.")
-        st.download_button("Baixar todos os PDFs (.zip)", data=zip_buffer, file_name=output_zip_name, mime='application/zip')
 
         st.info("Dica: se os nomes estiverem cortados, ajuste o 'Tamanho de fonte (inicial)' ou a 'Posição vertical'.")
 
