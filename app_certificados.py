@@ -37,7 +37,7 @@ st.write("Faça upload do template (PNG/JPG) e do Excel (.xlsx) com coluna 'nome
 
 # Sidebar settings
 st.sidebar.header("Configurações")
-FONT_PATH = st.sidebar.text_input("Caminho para fonte .ttf (deixe vazio para usar a fonte padrão)", value="LiberationSans-Regular.ttf")
+FONT_PATH = st.sidebar.text_input("Caminho para fonte .ttf (deixe vazio para usar a fonte padrão)", value="OpenSans-Regular.ttf")
 default_font_size = st.sidebar.slider("Tamanho de fonte (inicial)", min_value=20, max_value=180, value=48)
 max_width_pct = st.sidebar.slider("Largura máxima do nome (% da largura da imagem)", min_value=40, max_value=95, value=80)
 # Y position as percentage of image height
