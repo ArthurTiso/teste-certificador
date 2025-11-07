@@ -29,7 +29,7 @@ import zipfile
 import os
 import tempfile
 from datetime import datetime
-
+import glob
 st.set_page_config(page_title="Gerador de Certificados", layout="wide")
 
 st.title("Gerador de Certificados — Escola")
@@ -37,7 +37,15 @@ st.write("Faça upload do template (PNG/JPG) e do Excel (.xlsx) com coluna 'nome
 
 # Sidebar settings
 st.sidebar.header("Configurações")
-FONT_PATH = st.sidebar.text_input("Caminho para fonte .ttf (deixe vazio para usar a fonte padrão)", value="OpenSans-Regular.ttf")
+# --- Fontes disponíveis ---
+font_files = glob.glob("fonts/*.ttf")
+font_names = [os.path.basename(f) for f in font_files]
+if not font_files:
+    st.sidebar.warning("Nenhuma fonte encontrada na pasta 'fonts/'.")
+    FONT_PATH = "arial.ttf"
+else:
+    FONT_PATH = os.path.join("fonts", st.sidebar.selectbox("Selecione a fonte", font_names))
+
 default_font_size = st.sidebar.slider("Tamanho de fonte (inicial)", min_value=20, max_value=180, value=48)
 max_width_pct = st.sidebar.slider("Largura máxima do nome (% da largura da imagem)", min_value=40, max_value=95, value=80)
 fix_size = st.sidebar.checkbox("Usar tamanho fixo para todos os nomes", value=True)
