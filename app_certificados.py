@@ -53,12 +53,12 @@ gerar_pdf_unico = st.sidebar.checkbox("Gerar um único PDF com todos os certific
 
 # Y position as percentage of image height
 y_pos_pct = st.sidebar.slider("Posição vertical do nome (percentual da altura)", min_value=0, max_value=100, value=43)
-# Define nome do arquivo ZIP uma única vez (persistente entre recarregamentos)
+# Define nome do arquivo
 if "output_zip_name" not in st.session_state:
     st.session_state.output_zip_name = f"certificados_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
 
 output_zip_name = st.sidebar.text_input(
-    "Nome do arquivo ZIP de saída", 
+    "Nome do arquivo de saída", 
     value=st.session_state.output_zip_name,
     key="zip_name_input"
 )
