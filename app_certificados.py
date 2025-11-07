@@ -68,10 +68,24 @@ def load_font(path, size):
             return ImageFont.load_default()
 
 
+# --- Font utilities (corrigido) ---
+
+def load_font(font_path, size):
+    """Tenta carregar a fonte especificada. Se falhar, tenta Arial. Se falhar novamente, usa a fonte padrão."""
+    try:
+        return ImageFont.truetype(font_path, size)
+    except OSError:
+        try:
+            return ImageFont.truetype("arial.ttf", size)
+        except OSError:
+            return ImageFont.load_default()
+
+
 def fit_text_to_width(draw, text, font_path, initial_font_size, max_width):
+    """Ajusta o tamanho da fonte para que o texto caiba na largura especificada."""
     font_size = initial_font_size
     while font_size > 1:
-        font = ImageFont.truetype(font_path, font_size)
+        font = load_font(font_path, font_size)
         try:
             # Pillow 10+
             bbox = draw.textbbox((0, 0), text, font=font)
@@ -84,6 +98,7 @@ def fit_text_to_width(draw, text, font_path, initial_font_size, max_width):
             return font, (w, h)
         font_size -= 1
     return font, (w, h)
+
 
 
 if uploaded_image is not None:
@@ -143,7 +158,7 @@ if generate_btn:
                 max_w = int(W * (max_width_pct / 100.0))
 
                 # Fit font
-                font, (text_w, text_h) = fit_text_to_width(draw, nome, FONT_PATH if FONT_PATH.strip() != "" else "arial.ttf", default_font_size, max_w)
+                font, (text_w, text_h) = fit_text_to_width(draw, nome, FONT_PATH or "arial.ttf", default_font_size, max_w)
 
                 # X position
                 if centered_checkbox:
