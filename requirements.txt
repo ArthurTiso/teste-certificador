@@ -2,5 +2,5 @@ streamlit
 pillow
 pandas
 openpyxl
-PyPDF2
 reportlab
+PyPDF2
