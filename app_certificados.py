@@ -134,7 +134,7 @@ if uploaded_image is not None:
     W, H = base_preview.size
 
     # Texto de exemplo
-    exemplo_nome = "NOME INSERIDO"
+    exemplo_nome = "Nome Inserido"
     y_prev = int(H * (y_pos_pct / 100.0))
     max_w_prev = int(W * (max_width_pct / 100.0))
 
