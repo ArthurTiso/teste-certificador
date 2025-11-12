@@ -80,8 +80,7 @@ with col1:
     st.markdown("**Pré-visualização do template**")
     preview_placeholder = st.empty()
 with col2:
-    st.markdown("**Opções Rápidas**")
-    centered_checkbox = st.checkbox("Centralizar horizontalmente (recomendado)", value=True)
+
     generate_btn = st.button("Gerar certificados")
 
 
