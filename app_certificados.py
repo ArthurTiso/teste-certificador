@@ -52,6 +52,10 @@ max_width_pct = st.sidebar.slider("Largura máxima do nome (% da largura da imag
 # Y position como prct em slider
 y_pos_pct = st.sidebar.slider("Posição vertical do nome (percentual da altura)", min_value=0, max_value=100, value=43)
 
+# X como slides tbm
+x_pos_pct = st.sidebar.slider("Posição horizontal do nome (%)", 0, 100, 50)
+
+
 fix_size = st.sidebar.checkbox("Usar tamanho fixo para todos os nomes", value=True)
 gerar_pdf_unico = st.sidebar.checkbox("Gerar um único PDF com todos os certificados", value=False)
 
@@ -148,7 +152,7 @@ if uploaded_image is not None:
             default_font_size, max_w_prev
         )
 
-    x_prev = (W - text_w) // 2
+    x_prev = int(W * (x_pos_pct / 100.0)) - (text_w // 2)
     draw_prev.text((x_prev, y_prev), exemplo_nome, font=font_prev, fill=(0, 0, 0, 255))
 
     preview_placeholder.image(base_preview, use_container_width=True)
@@ -215,7 +219,7 @@ if generate_btn:
                     default_font_size, max_w
                 )
         
-            x = (W - text_w) // 2 if centered_checkbox else int(W * 0.1)
+            x = int(W * (x_pos_pct / 100.0)) - (text_w // 2)
         
             # Texto 
             draw.text((x, y), nome, font=font, fill=(0,0,0,255))
