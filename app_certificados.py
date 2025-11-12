@@ -50,10 +50,10 @@ default_font_size = st.sidebar.slider("Tamanho de fonte (inicial)", min_value=20
 max_width_pct = st.sidebar.slider("Largura máxima do nome (% da largura da imagem)", min_value=40, max_value=95, value=80)
 
 # Y position como prct em slider
-y_pos_pct = st.sidebar.slider("Posição vertical do nome (percentual da altura)", min_value=0, max_value=100, value=43)
+y_pos_pct = st.sidebar.slider("Posição vertical do nome", min_value=0, max_value=100, value=43)
 
 # X como slides tbm
-x_pos_pct = st.sidebar.slider("Posição horizontal do nome (%)", 0, 100, 50)
+x_pos_pct = st.sidebar.slider("Posição horizontal do nome", 0, 100, 50)
 
 
 fix_size = st.sidebar.checkbox("Usar tamanho fixo para todos os nomes", value=True)
